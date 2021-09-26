@@ -10,7 +10,7 @@ To train a learner, run:
 ```bash
 jupyter notebook
 ```
-and open up CausIL.ipynb.
+and open up CausIL.ipynb. This package supports training via Behavioral Cloning, DoubIL, and ResiduIL.
 
 ## Visualizing Results
 Run:
