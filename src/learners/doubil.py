@@ -12,7 +12,7 @@ from src.models import Model
 def DoubIL(D_E, pi_0, dynamics, lr=3e-4, nsamp=4, pi_BC=None):
     pi_init = deepcopy(pi_0)
     if pi_BC is None:
-        pi_BC = BC(D_E, pi_0, lr=lr, steps=int(1e5))
+        pi_BC = BC(D_E, pi_0, lr=lr, steps=int(5e4))
     print("Done w/ BC")
     X_trajs = [x[0] for x in D_E]
     U_trajs = [x[1] for x in D_E]
