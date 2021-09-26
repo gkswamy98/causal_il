@@ -1,6 +1,7 @@
 # Modified to make simulation easier:
-# 1. Removed noise in dynamics (start state still random)
-# 2. Removed legs as full state of joint not encoded in observed state
+# 1. Removed legs as full state of joint not encoded in observed state
+# 2. Fixed scene layout.
+# 3. Removed dispersion noise.
 
 """
 Rocket trajectory optimization is a classic topic in Optimal Control.
@@ -96,7 +97,7 @@ class LunarLander(gym.Env, EzPickle):
 
     continuous = False
 
-    def __init__(self):
+    def __init__(self, confounding=False, fixed_terrain=False):
         EzPickle.__init__(self)
         self.seed()
         self.viewer = None
@@ -105,6 +106,8 @@ class LunarLander(gym.Env, EzPickle):
         self.moon = None
         self.lander = None
         self.particles = []
+        self.confounding = confounding
+        self.fixed_terrain = fixed_terrain
 
         self.prev_reward = None
 
@@ -145,18 +148,24 @@ class LunarLander(gym.Env, EzPickle):
         self.world.contactListener = self.world.contactListener_keepref
         self.game_over = False
         self.prev_shaping = None
+        self.u_past = np.random.normal()
+
+        if self.fixed_terrain:
+            curr_height = height
+        else:
+            curr_height = np.random.uniform(0, H / 2, size=(CHUNKS + 1,))
 
         chunk_x = [W / (CHUNKS - 1) * i for i in range(CHUNKS)]
         self.helipad_x1 = chunk_x[CHUNKS // 2 - 1]
         self.helipad_x2 = chunk_x[CHUNKS // 2 + 1]
         self.helipad_y = H / 4
-        height[CHUNKS // 2 - 2] = self.helipad_y
-        height[CHUNKS // 2 - 1] = self.helipad_y
-        height[CHUNKS // 2 + 0] = self.helipad_y
-        height[CHUNKS // 2 + 1] = self.helipad_y
-        height[CHUNKS // 2 + 2] = self.helipad_y
+        curr_height[CHUNKS // 2 - 2] = self.helipad_y
+        curr_height[CHUNKS // 2 - 1] = self.helipad_y
+        curr_height[CHUNKS // 2 + 0] = self.helipad_y
+        curr_height[CHUNKS // 2 + 1] = self.helipad_y
+        curr_height[CHUNKS // 2 + 2] = self.helipad_y
         smooth_y = [
-            0.33 * (height[i - 1] + height[i + 0] + height[i + 1])
+            0.33 * (curr_height[i - 1] + curr_height[i + 0] + curr_height[i + 1])
             for i in range(CHUNKS)
         ]
 
@@ -225,6 +234,10 @@ class LunarLander(gym.Env, EzPickle):
 
     def step(self, action):
         self.t += 1
+        if self.confounding:
+            u = np.random.normal()
+            action = action + 2 * self.u_past + u
+            self.u_past = u
         if self.continuous:
             action = np.clip(action, -1, +1).astype(np.float32)
         else:

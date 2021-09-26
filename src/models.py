@@ -10,7 +10,7 @@ import gym
 from stable_baselines3 import PPO
 
 class Model(nn.Module):
-    def __init__(self, in_dim=1, out_dim=1, hidden_dim=32, softmax=False):
+    def __init__(self, in_dim=1, out_dim=1, hidden_dim=64, softmax=False):
         super(Model, self).__init__()
         self.l1 = nn.Linear(in_dim, hidden_dim)
         self.l2 = nn.Linear(hidden_dim, hidden_dim)
