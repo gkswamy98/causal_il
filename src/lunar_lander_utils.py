@@ -79,8 +79,8 @@ def eval_policy(pi, env, noisy=False):
     Js = []
     for _ in range(100):
         if noisy:
-            s_traj, a_traj, J = rollout(pi, env)
-        else:
             s_traj, a_traj, J = noisy_rollout(pi, env)
+        else:
+            s_traj, a_traj, J = rollout(pi, env)
         Js.append(J)
     return np.mean(Js)
