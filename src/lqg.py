@@ -44,18 +44,18 @@ def rollout(s_0, pi, T=39):
     actions = np.array(actions, dtype='float')
     return states, actions, J
 
-def noisy_rollout(s_0, pi, T=39):
+def noisy_rollout(s_0, pi, T=100, num_steps_cnfnd=1):
     states = []
     actions = []
     s = s_0
-    u_past = 0
+    u_past = [0] * num_steps_cnfnd
     J = 0
     for t in range(T):
         states.append(s.reshape(-1))
         u = noise()
-        a = pi(s) + 1 * u + 2 * u_past
+        a = pi(s) + (1 * u + 1 * np.sum(u_past)) / 1
         J += (s.T @ Q @ s) + (a.T @ R @ a)
-        u_past = u
+        u_past[t % num_steps_cnfnd] = u
         actions.append(a.reshape(-1))
         s = dynamics(s, a)
     states = np.array(states, dtype='float')

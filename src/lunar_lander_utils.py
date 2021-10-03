@@ -66,7 +66,7 @@ def noisy_rollout(pi, env):
         if isinstance(a, tuple):
             a = a[0]
         u = np.random.normal()
-        a = a + u + 2 * u_past
+        a = a + 0.1 * u + 2.0 * u_past
         u_past = u
         actions.append(a.reshape(-1))
         s, r, done, _ = env.step(a)
