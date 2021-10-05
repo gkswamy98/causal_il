@@ -44,7 +44,7 @@ def rollout(s_0, pi, T=39):
     actions = np.array(actions, dtype='float')
     return states, actions, J
 
-def noisy_rollout(s_0, pi, T=100, num_steps_cnfnd=1):
+def noisy_rollout(s_0, pi, T=200, num_steps_cnfnd=1):
     states = []
     actions = []
     s = s_0
