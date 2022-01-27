@@ -7,14 +7,14 @@ sys.path.append('..')
 from src.models import Model
 from src.oadam import OAdam, add_weight_decay, net_to_list
 
-def ResiduIL(D_E, pi_0, f_0, lr=5e-5, f_norm_penalty=1e-3, bc_reg=5e-2):
+def ResiduIL(D_E, pi_0, f_0, lr=5e-5, f_norm_penalty=1e-3, bc_reg=5e-2, wd=1e-3):
     pi = pi_0
     f = f_0
 
     if isinstance(pi, Model):
-        optimizer_pi = OAdam(add_weight_decay(pi, 1e-3),
+        optimizer_pi = OAdam(add_weight_decay(pi, wd),
                                         lr=lr, betas=(0, .01))
-        optimizer_f = OAdam(add_weight_decay(f, 1e-3),
+        optimizer_f = OAdam(add_weight_decay(f, wd),
                                         lr=lr, betas=(0, .01))
     else:
         optimizer_pi = OAdam(net_to_list(pi),

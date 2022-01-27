@@ -9,17 +9,20 @@ import sys
 sys.path.append('..')
 from src.models import Model
 
-def DoubIL(D_E, pi_0, dynamics, lr=3e-4, nsamp=4, pi_BC=None, sigma=4.05, wd=1e-3):
+def DoubIL(D_E, pi_0, dynamics, lr=3e-4, nsamp=4, pi_BC=None, wd=5e-3, sigma=6):
     pi_init = deepcopy(pi_0)
     if pi_BC is None:
         pi_BC = BC(D_E, pi_0, lr=lr)
     print("Done w/ BC")
     X_trajs = [x[0] for x in D_E]
     U_trajs = [x[1] for x in D_E]
+    P = [x[2] for x in D_E]
+    V = [x[3] for x in D_E]
+    C = [x[4] for x in D_E]
     X_IV = []
-    for _ in range(nsamp):
+    for i in range(nsamp):
         U_BC = [pi_BC(torch.from_numpy(xt[:-1]).float()).detach().numpy() + sigma * np.random.normal(size=(len(xt[:-1]), 1)) for xt in X_trajs]
-        X_prime = np.concatenate([dynamics(X_trajs[i][:-1], U_BC[i]) for i in range(len(D_E))], axis=0)
+        X_prime = np.concatenate([dynamics(P[i][:-1], V[i][:-1], C[i][:-1], U_BC[i]) for i in range(len(D_E))], axis=0)
         X_IV.append(X_prime) # samples from P(X|z)
     pi = pi_init
     U_IV = np.concatenate([ut[1:] for ut in U_trajs], axis=0) # single-sample estimate of E[Y|z]
