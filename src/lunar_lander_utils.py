@@ -53,7 +53,7 @@ def rollout(pi, env):
     actions = np.array(actions, dtype='float')
     return states, actions, J
 
-def noisy_rollout(pi, env):
+def noisy_rollout(pi, env, sigma=0.5):
     states = []
     actions = []
     s = env.reset()
@@ -65,8 +65,8 @@ def noisy_rollout(pi, env):
         a = pi(s)
         if isinstance(a, tuple):
             a = a[0]
-        u = np.random.normal()
-        a = a + 0.1 * u + 2.0 * u_past
+        u = np.random.normal() * sigma
+        a = a + 0.1 * u + 8.0 * u_past
         u_past = u
         actions.append(a.reshape(-1))
         s, r, done, _ = env.step(a)

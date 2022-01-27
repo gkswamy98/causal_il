@@ -97,7 +97,7 @@ class LunarLander(gym.Env, EzPickle):
 
     continuous = False
 
-    def __init__(self, confounding=False, fixed_terrain=False):
+    def __init__(self, confounding=False, fixed_terrain=False, sigma=1.):
         EzPickle.__init__(self)
         self.seed()
         self.viewer = None
@@ -108,6 +108,7 @@ class LunarLander(gym.Env, EzPickle):
         self.particles = []
         self.confounding = confounding
         self.fixed_terrain = fixed_terrain
+        self.sigma = sigma
 
         self.prev_reward = None
 
@@ -124,7 +125,6 @@ class LunarLander(gym.Env, EzPickle):
         else:
             # Nop, fire left engine, main engine, right engine
             self.action_space = spaces.Discrete(4)
-
         self.reset()
 
     def seed(self, seed=None):
@@ -148,7 +148,7 @@ class LunarLander(gym.Env, EzPickle):
         self.world.contactListener = self.world.contactListener_keepref
         self.game_over = False
         self.prev_shaping = None
-        self.u_past = np.random.normal()
+        self.u_past = np.random.normal() * self.sigma
 
         if self.fixed_terrain:
             curr_height = height
@@ -235,8 +235,8 @@ class LunarLander(gym.Env, EzPickle):
     def step(self, action):
         self.t += 1
         if self.confounding:
-            u = np.random.normal()
-            action = action + 2 * self.u_past + u
+            u = np.random.normal() * self.sigma
+            action = action + 8 * self.u_past + 0.1 * u
             self.u_past = u
         if self.continuous:
             action = np.clip(action, -1, +1).astype(np.float32)
@@ -249,7 +249,7 @@ class LunarLander(gym.Env, EzPickle):
         # Engines
         tip = (math.sin(self.lander.angle), math.cos(self.lander.angle))
         side = (-tip[1], tip[0])
-        dispersion = [0, 0]
+        dispersion = [0, 0]#[self.np_random.uniform(-1.0, +1.0) / SCALE for _ in range(2)]
 
         m_power = 0.0
         if (self.continuous and action[0] > 0.0) or (
@@ -331,12 +331,6 @@ class LunarLander(gym.Env, EzPickle):
         reward -= s_power * 0.03
 
         done = False
-        if self.game_over and abs(state[3]) < 0.05:
-            done = True
-            reward = 100
-        if self.game_over and abs(state[3]) > 0.05:
-            done = True
-            reward = -100
         if abs(state[0]) >= 1.0 or self.t > 1000:
             done = True
             reward = -100
