@@ -2,15 +2,15 @@
 A repo for Causal Imitation Learning.
 
 ## Running Experiments
-To re-train the LunarLander expert, run:
+To re-train an expert, run:
 ```bash
-python experts/train_expert.py
+python experts/train_expert.py -e {lunarlander, halfcheetah, ant}
 ```
 To train a learner, run:
 ```bash
 jupyter notebook
 ```
-and open up CausIL.ipynb. This package supports training via Behavioral Cloning, DoubIL, and ResiduIL.
+and open up LunarLander.ipynb and PyBullet.ipynb. This package supports training via Behavioral Cloning, DoubIL, and ResiduIL.
 
 ## Visualizing Results
 Run:
