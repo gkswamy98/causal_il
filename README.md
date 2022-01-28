@@ -1,5 +1,5 @@
 # CausIL
-A repo for Causal Imitation Learning.
+A repo for Causal Imitation Learning under Temporally Correlated Noise.
 
 ## Running Experiments
 To re-train an expert, run:
