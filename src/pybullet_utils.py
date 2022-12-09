@@ -1,5 +1,6 @@
 import gym
 import numpy as np
+import tqdm
 
 class CnfndWrapper(gym.Env):
     metadata = {'render.modes': ['human']}
@@ -45,16 +46,20 @@ def set_state(env, base_pos, base_vel, joint_states):
         for j in range(p.getNumJoints(i)):
             p.resetJointState(i,j,*joint_states[i][j][:2])
 
-def T(base_pos, base_vel, joint_states, a, sim_env):
+def T(base_pos, base_vel, joint_states, a, a_e, sim_env):
     sim_env.reset()
     set_state(sim_env, base_pos, base_vel, joint_states)
+    for t in range(len(a_e)):
+        sim_env.step(a_e[t])
     obs, _, _, _ = sim_env.step(a)
     return obs
 
-def dynamics(P, V, C, A, sim_env):
+def dynamics(P, V, C, A, A_exp, sim_env):
     S_prime = []
-    for (base_pos, base_vel, joint_states, a) in zip(P, V, C, A):
-        s_prime = T(base_pos, base_vel, joint_states, a, sim_env)
+    for t in tqdm.tqdm(range(len(A))):
+        a = A[t]
+        a_e = A_exp[:t]
+        s_prime = T(P[0], V[0], C[0], a, a_e, sim_env)
         S_prime.append(s_prime)
     return np.stack(S_prime, axis=0)
 
