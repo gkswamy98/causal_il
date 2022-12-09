@@ -6,6 +6,7 @@ import sys
 sys.path.append('..')
 from src.models import Model
 from src.oadam import OAdam, add_weight_decay, net_to_list
+import tqdm
 
 def ResiduIL(D_E, pi_0, f_0, lr=5e-5, f_norm_penalty=1e-3, bc_reg=5e-2, wd=1e-3):
     pi = pi_0
@@ -29,7 +30,7 @@ def ResiduIL(D_E, pi_0, f_0, lr=5e-5, f_norm_penalty=1e-3, bc_reg=5e-2, wd=1e-3)
     U = np.concatenate([ut[1:] for ut in U_trajs], axis=0)
     X_past = np.concatenate([xt[:-1] for xt in X_trajs], axis=0)
 
-    for step in range(int(5e4)):
+    for step in tqdm.tqdm(range(int(5e4))):
         idx = np.random.choice(len(X), 128)
         pi_inputs = torch.from_numpy(X[idx])
         f_inputs = torch.from_numpy(X_past[idx])
