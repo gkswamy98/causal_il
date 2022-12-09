@@ -8,6 +8,8 @@ from .bc import BC
 import sys
 sys.path.append('..')
 from src.models import Model
+import tqdm
+import multiprocessing
 
 def DoubIL(D_E, pi_0, dynamics, lr=3e-4, nsamp=4, pi_BC=None, wd=5e-3, sigma=6):
     pi_init = deepcopy(pi_0)
@@ -22,7 +24,14 @@ def DoubIL(D_E, pi_0, dynamics, lr=3e-4, nsamp=4, pi_BC=None, wd=5e-3, sigma=6):
     X_IV = []
     for i in range(nsamp):
         U_BC = [pi_BC(torch.from_numpy(xt[:-1]).float()).detach().numpy() + sigma * np.random.normal(size=(len(xt[:-1]), 1)) for xt in X_trajs]
-        X_prime = np.concatenate([dynamics(P[i][:-1], V[i][:-1], C[i][:-1], U_BC[i]) for i in range(len(D_E))], axis=0)
+        global samp
+        def samp(j):
+            return dynamics(P[j][:-1], V[j][:-1], C[j][:-1], U_BC[j][:-1], U_trajs[j][:-1])
+        X_prime = []
+        with multiprocessing.Pool() as pool:
+            for result in pool.map(samp, list(range(len(D_E)))):
+                X_prime.append(result)
+        X_prime = np.concatenate(X_prime, axis=0)
         X_IV.append(X_prime) # samples from P(X|z)
     pi = pi_init
     U_IV = np.concatenate([ut[1:] for ut in U_trajs], axis=0) # single-sample estimate of E[Y|z]
@@ -31,7 +40,7 @@ def DoubIL(D_E, pi_0, dynamics, lr=3e-4, nsamp=4, pi_BC=None, wd=5e-3, sigma=6):
     else:
         optimizer = optim.Adam(pi.parameters(), lr=lr)
     print('IV Data', X_IV[0].shape, U_IV.shape)
-    for step in range(int(5e4)):
+    for step in tqdm.tqdm(range(int(5e4))):
         idx = np.random.choice(len(X_IV[0]), 128)
         actions = torch.from_numpy(U_IV[idx])
         optimizer.zero_grad()
