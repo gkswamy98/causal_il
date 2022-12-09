@@ -5,6 +5,7 @@ from torch import optim, nn
 import sys
 sys.path.append('..')
 from src.models import Model
+import tqdm
 
 def BC(D_E, pi_0, loss_fn=nn.MSELoss(), lr=3e-4, steps=int(5e4), wd=1e-3):
     pi = pi_0
@@ -16,7 +17,7 @@ def BC(D_E, pi_0, loss_fn=nn.MSELoss(), lr=3e-4, steps=int(5e4), wd=1e-3):
     else:
         optimizer = optim.Adam(pi.parameters(), lr=lr)
 
-    for step in range(steps):
+    for step in tqdm.tqdm(range(steps)):
         idx = np.random.choice(len(X), 128)
         states = torch.from_numpy(X[idx])
         actions = torch.from_numpy(U[idx])
